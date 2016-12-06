@@ -20,7 +20,7 @@ glm::vec3 getColorFromRay(const Scene& scene, const Ray& ray) {
     //return a gradient from blue to white
     auto direction = normalize(ray.getDirection());
     auto t = 0.5f * (direction.y + 1.f);
-    return (1.f - t) * vec3(1) + t * vec3(0.5f, 0.7f, 1.f);
+    return (1.f - t) * vec3(0) + t * vec3(0.3f);
 }
 
 int main(int argc, char **argv) {
