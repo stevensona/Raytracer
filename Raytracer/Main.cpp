@@ -3,6 +3,7 @@
 #include <random>
 
 #include <glm\glm.hpp>
+#include <glm\gtc\random.hpp>
 
 #include "Image.h"
 #include "Color32.h"
@@ -10,6 +11,9 @@
 #include "Scene.h"
 #include "Sphere.h"
 #include "Camera.h"
+
+
+
 
 glm::vec3 getColorFromRay(const Scene& scene, const Ray& ray) {
     using namespace glm;
@@ -19,10 +23,11 @@ glm::vec3 getColorFromRay(const Scene& scene, const Ray& ray) {
     if (hit == nullptr) {
         auto direction = normalize(ray.getDirection());
         auto t = 0.5f * (direction.y + 1.f);
-        return (1.f - t) * vec3(0) + t * vec3(0.3f);
+        return (1.f - t) * vec3(1) + t * vec3(0.5f, 0.7f, 1.0f);
     }
-    
-    return 0.5f * (hit->getNormal() + vec3(1));
+    vec3 target = hit->getLocation() + hit->getNormal() + ballRand(1.f);
+    Ray secondary(hit->getLocation(), target - hit->getLocation());
+    return 0.5f * getColorFromRay(scene, secondary);
 }
 
 int main(int argc, char **argv) {
@@ -33,7 +38,7 @@ int main(int argc, char **argv) {
     auto samples = 100;
 
     Scene scene;
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, 0, -1), 0.4f)));
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, 0, -1), 0.5f)));
     scene.addObject(make_unique<Sphere>(Sphere(vec3(0, -100.5f, -1), 100)));
 
     Camera camera(vec3(0));
@@ -55,7 +60,7 @@ int main(int argc, char **argv) {
 
             }
             color /= static_cast<float>(samples);
-
+            color = glm::sqrt(color);
             testImage.setPixel(x, y, Color32(color.r, color.g, color.b, 1.0f));
 
         }
