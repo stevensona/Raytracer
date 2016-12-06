@@ -10,7 +10,7 @@ glm::vec3 Ray::getDirection() const
     return direction;
 }
 
-glm::vec3 Ray::getPoint(const float t) const
+glm::vec3 Ray::getPoint(const float distance) const
 {
-    return origin + direction * t;
+    return origin + direction * distance;
 }

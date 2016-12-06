@@ -14,6 +14,6 @@ public:
 
     glm::vec3 getOrigin() const;
     glm::vec3 getDirection() const;
-    glm::vec3 getPoint(const float t) const;
+    glm::vec3 getPoint(const float distance) const;
 
 };

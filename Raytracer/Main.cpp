@@ -6,34 +6,20 @@
 #include "Image.h"
 #include "Color32.h"
 #include "Ray.h"
+#include "Scene.h"
+#include "Sphere.h"
 
-float doesHitSphere(const glm::vec3& center, float radius, const Ray& ray) {
-    using namespace glm;
-    auto oc = ray.getOrigin() - center;
-    auto a = dot(ray.getDirection(), ray.getDirection());
-    auto b = 2.f * dot(oc, ray.getDirection());
-    auto c = dot(oc, oc) - radius * radius;
-    auto discriminant = b * b - 4 * a * c;
-    if (discriminant < 0) {
-        return -1.f;
-    }
-    else {
-        return (-b - sqrt(discriminant)) / (2.f * a);
-    }
-}
-
-glm::vec3 getColorFromRay(const Ray& ray) {
+glm::vec3 getColorFromRay(const Scene& scene, const Ray& ray) {
     using namespace glm;
 
-    vec3 spherePos(0, 0, -1);
-    auto t = doesHitSphere(spherePos, 0.5, ray);
-    if(t > 0) {
-        vec3 normal = normalize(ray.getPoint(t) - spherePos);
-        return 0.5f * (normal + vec3(1));
+    auto hit = scene.getHitInfo(ray);
+    
+    if(hit != nullptr) {
+        return 0.5f * (hit->getNormal() + vec3(1));
     }
     //return a gradient from blue to white
     auto direction = normalize(ray.getDirection());
-    t = 0.5f * (direction.y + 1.f);
+    auto t = 0.5f * (direction.y + 1.f);
     return (1.f - t) * vec3(1) + t * vec3(0.5f, 0.7f, 1.f);
 }
 
@@ -42,6 +28,10 @@ int main(int argc, char **argv) {
     using namespace glm;
 
     Image testImage(800, 600, 4);
+
+    Scene scene;
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, 0, -1), 0.4f)));
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, -100.5f, -1), 100)));
 
     vec3 origin(0);
     vec3 target(0, 0, -1.f);
@@ -61,7 +51,7 @@ int main(int argc, char **argv) {
 
             Ray ray(origin, direction);
 
-            auto color = getColorFromRay(ray);
+            auto color = getColorFromRay(scene, ray);
 
             testImage.setPixel(x, y, Color32(color.r, color.g, color.b, 1.0f));
 
