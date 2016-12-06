@@ -7,11 +7,34 @@
 #include "Color32.h"
 #include "Ray.h"
 
+float doesHitSphere(const glm::vec3& center, float radius, const Ray& ray) {
+    using namespace glm;
+    auto oc = ray.getOrigin() - center;
+    auto a = dot(ray.getDirection(), ray.getDirection());
+    auto b = 2.f * dot(oc, ray.getDirection());
+    auto c = dot(oc, oc) - radius * radius;
+    auto discriminant = b * b - 4 * a * c;
+    if (discriminant < 0) {
+        return -1.f;
+    }
+    else {
+        return (-b - sqrt(discriminant)) / (2.f * a);
+    }
+}
+
 glm::vec3 getColorFromRay(const Ray& ray) {
+    using namespace glm;
+
+    vec3 spherePos(0, 0, -1);
+    auto t = doesHitSphere(spherePos, 0.5, ray);
+    if(t > 0) {
+        vec3 normal = normalize(ray.getPoint(t) - spherePos);
+        return 0.5f * (normal + vec3(1));
+    }
     //return a gradient from blue to white
-    auto direction = glm::normalize(ray.getDirection());
-    auto t = 0.5f * (direction.y + 1.f);
-    return (1.f - t) * glm::vec3(1) + t * glm::vec3(0.5f, 0.7f, 1.f);
+    auto direction = normalize(ray.getDirection());
+    t = 0.5f * (direction.y + 1.f);
+    return (1.f - t) * vec3(1) + t * vec3(0.5f, 0.7f, 1.f);
 }
 
 int main(int argc, char **argv) {
