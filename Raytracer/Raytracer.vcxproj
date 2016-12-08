@@ -152,8 +152,13 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="HitInfo.cpp" />
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="Lambert.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="Metal.cpp" />
+    <ClCompile Include="Object.cpp" />
     <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="ScatteredRay.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
@@ -162,8 +167,12 @@
     <ClInclude Include="Color32.h" />
     <ClInclude Include="HitInfo.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="Lambert.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="Metal.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="ScatteredRay.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Sphere.h" />
   </ItemGroup>

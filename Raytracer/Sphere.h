@@ -7,9 +7,11 @@ class Sphere : public Object {
     float radius;
 
 public:
-    Sphere(const glm::vec3& center, const float radius) :
+    Sphere(const glm::vec3& center, const float radius, std::shared_ptr<Material> material) :
         center(center),
-        radius(radius) {}
+        radius(radius) {
+        setMaterial(material);
+    }
 
-    std::unique_ptr<HitInfo> getHitInfo(const Ray& ray, const float minDistance, const float maxDistance) const override;
+    virtual std::unique_ptr<HitInfo> getHitInfo(const Ray& ray, const float minDistance, const float maxDistance) const override;
 };

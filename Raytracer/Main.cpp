@@ -4,7 +4,6 @@
 #include <future>
 
 #include <glm\glm.hpp>
-#include <glm\gtc\random.hpp>
 
 #include "Image.h"
 #include "Color32.h"
@@ -12,9 +11,10 @@
 #include "Scene.h"
 #include "Sphere.h"
 #include "Camera.h"
+#include "Lambert.h"
+#include "Metal.h"
 
-
-glm::vec3 getColorFromRay(const Scene& scene, const Ray& ray) {
+glm::vec3 getColorFromRay(const Scene& scene, const Ray& ray, int depth = 0) {
     using namespace glm;
 
     auto hit = scene.getHitInfo(ray);
@@ -22,25 +22,37 @@ glm::vec3 getColorFromRay(const Scene& scene, const Ray& ray) {
     if (hit == nullptr) {
         auto direction = normalize(ray.getDirection());
         auto t = 0.5f * (direction.y + 1.f);
-        return (1.f - t) * vec3(1) + t * vec3(0.5f, 0.7f, 1.0f);
+        return (1.f - t) * vec3(1) + t * vec3(0.3f, 0.6f, 0.9f);
     }
-    vec3 target = hit->getLocation() + hit->getNormal() + ballRand(1.f);
-    Ray secondary(hit->getLocation(), target - hit->getLocation());
-    return 0.5f * getColorFromRay(scene, secondary);
+
+    auto secondary = hit->getMaterial()->getScattered(ray, hit.get());
+    if (depth > 50 || secondary == nullptr) {
+        return vec3(0.f);
+    }
+
+    return secondary->getAttenuation() * getColorFromRay(scene, *secondary.get(), depth + 1);
 }
 
 int main(int argc, char **argv) {
     using namespace std;
     using namespace glm;
 
-    Image testImage(1027, 768, 4);
+    Image testImage(800, 600, 4);
     
     const auto samples = 200;
     const auto threadCount = 8;
 
     Scene scene;
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, 0, -1), 0.5f)));
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, -100.5f, -1), 100)));
+    
+    shared_ptr<Material> basicPink = make_shared<Lambert>(vec3(0.8f, 0.3f, 0.3f));
+    shared_ptr<Material> basicDirt = make_shared<Lambert>(vec3(0.47f, 0.28f, 0.0f));
+    shared_ptr<Material> metalGold = make_shared<Metal>(vec3(0.8f, 0.6f, 0.2f));
+    shared_ptr<Material> metalSilver = make_shared<Metal>(vec3(0.8f,0.8f,0.8f));
+
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, 0, -1), 0.5f, basicPink)));
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(1.f, 0, -1), 0.5f, metalGold)));
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(-1.f, 0, -1), 0.5f, metalSilver)));
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, -100.5f, -1), 100, basicDirt)));
 
     Camera camera(vec3(0));
 
