@@ -39,22 +39,23 @@ int main(int argc, char **argv) {
 
     Image testImage(800, 600, 4);
     
-    const auto samples = 512;
+    const auto samples = 250;
     const auto threadCount = 8;
 
     Scene scene;
     
     shared_ptr<Material> basicPink = make_shared<Lambert>(vec3(0.8f, 0.3f, 0.3f));
-    shared_ptr<Material> basicDirt = make_shared<Lambert>(vec3(0.47f, 0.28f, 0.0f));
-    shared_ptr<Material> metalGold = make_shared<Metal>(vec3(0.8f, 0.6f, 0.2f), 1.0f);
-    shared_ptr<Material> metalSilver = make_shared<Metal>(vec3(0.8f,0.8f,0.8f), 0.3f);
+    shared_ptr<Material> basicDirt = make_shared<Lambert>(vec3(0.8f, 0.8f, 0.0f));
+    shared_ptr<Material> metalGold = make_shared<Metal>(vec3(0.8f, 0.6f, 0.2f), 0.75f);
+    shared_ptr<Material> metalSilver = make_shared<Metal>(vec3(0.8f,0.8f,0.8f), 0.1f);
 
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, 0, -1), 0.5f, basicPink)));
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(1.f, 0, -1), 0.5f, metalGold)));
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(-1.f, 0, -1), 0.5f, metalSilver)));
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, -100.5f, -1), 100, basicDirt)));
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, 0, 0), 0.5f, basicPink)));
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(1.3f, 0, 0), 0.5f, metalGold)));
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(-1.3f, 0, 0), 0.5f, metalSilver)));
+    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, -200.5f, 0), 200, basicDirt)));
 
-    Camera camera(vec3(0));
+    auto ratio = static_cast<float>(testImage.getWidth()) / static_cast<float>(testImage.getHeight());
+    Camera camera(vec3(-0.75f, 1.25f, 1.7), vec3(0, 0, 0), 110.f, ratio);
 
     default_random_engine gen;
     uniform_real_distribution<float> dist(0.f, 1.f);

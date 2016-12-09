@@ -11,8 +11,7 @@ class Camera {
     glm::vec3 vertical;
 
 public:
-    //TODO fov, "look-at" function
-    Camera(const glm::vec3& position);
+    Camera(const glm::vec3& position, const glm::vec3& target, const float fov, const float aspectRatio);
 
     Ray getRay(const float u, const float v) const;
 };
