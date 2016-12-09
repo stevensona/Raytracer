@@ -1,3 +1,5 @@
+#include <glm\gtc\random.hpp>
+
 #include "Lambert.h"
 
 using namespace std; 

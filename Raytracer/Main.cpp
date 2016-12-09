@@ -39,15 +39,15 @@ int main(int argc, char **argv) {
 
     Image testImage(800, 600, 4);
     
-    const auto samples = 200;
+    const auto samples = 512;
     const auto threadCount = 8;
 
     Scene scene;
     
     shared_ptr<Material> basicPink = make_shared<Lambert>(vec3(0.8f, 0.3f, 0.3f));
     shared_ptr<Material> basicDirt = make_shared<Lambert>(vec3(0.47f, 0.28f, 0.0f));
-    shared_ptr<Material> metalGold = make_shared<Metal>(vec3(0.8f, 0.6f, 0.2f));
-    shared_ptr<Material> metalSilver = make_shared<Metal>(vec3(0.8f,0.8f,0.8f));
+    shared_ptr<Material> metalGold = make_shared<Metal>(vec3(0.8f, 0.6f, 0.2f), 1.0f);
+    shared_ptr<Material> metalSilver = make_shared<Metal>(vec3(0.8f,0.8f,0.8f), 0.3f);
 
     scene.addObject(make_unique<Sphere>(Sphere(vec3(0, 0, -1), 0.5f, basicPink)));
     scene.addObject(make_unique<Sphere>(Sphere(vec3(1.f, 0, -1), 0.5f, metalGold)));

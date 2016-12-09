@@ -1,6 +1,5 @@
 #pragma once
 #include "Material.h"
-#include <glm\gtc\random.hpp>
 
 
 class Lambert : public Material {
