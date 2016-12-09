@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 
     Image testImage(800, 600, 4);
     
-    const auto samples = 250;
+    const auto samples = 2048;
     const auto threadCount = 8;
 
     Scene scene;
@@ -55,7 +55,10 @@ int main(int argc, char **argv) {
     scene.addObject(make_unique<Sphere>(Sphere(vec3(0, -200.5f, 0), 200, basicDirt)));
 
     auto ratio = static_cast<float>(testImage.getWidth()) / static_cast<float>(testImage.getHeight());
-    Camera camera(vec3(-0.75f, 1.25f, 1.7), vec3(0, 0, 0), 110.f, ratio);
+
+    vec3 camPos(2.f, 0.8f, 1.1f);
+    vec3 camTarget(0.f);
+    Camera camera(camPos, camTarget, 110.f, ratio, 0.2f, static_cast<float>((camTarget - camPos).length()));
 
     default_random_engine gen;
     uniform_real_distribution<float> dist(0.f, 1.f);
