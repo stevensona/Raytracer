@@ -12,8 +12,8 @@ std::unique_ptr<HitInfo> Scene::getHitInfo(const Ray & ray) const
     auto closest_hit = std::unique_ptr<HitInfo>(nullptr);
     float closest = std::numeric_limits<float>::max();
 
-    for (auto i = objects.begin(); i != objects.end(); ++i) {
-        auto hit = (*i)->getHitInfo(ray, 0.001f, closest);
+    for (auto& object : objects) {
+        auto hit = object.get()->getHitInfo(ray, 0.001f, closest);
         if (hit != nullptr) {
             if (closest_hit == nullptr) {
                 closest_hit = std::move(hit);

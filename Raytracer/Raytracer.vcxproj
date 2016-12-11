@@ -158,6 +158,7 @@
     <ClCompile Include="Metal.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="Raytracer.cpp" />
     <ClCompile Include="ScatteredRay.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="Metal.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="Raytracer.h" />
     <ClInclude Include="ScatteredRay.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Sphere.h" />

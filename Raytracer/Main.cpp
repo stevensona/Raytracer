@@ -5,6 +5,7 @@
 
 #include <glm\glm.hpp>
 
+#include "Raytracer.h"
 #include "Image.h"
 #include "Color32.h"
 #include "Ray.h"
@@ -14,24 +15,6 @@
 #include "Lambert.h"
 #include "Metal.h"
 
-glm::vec3 getColorFromRay(const Scene& scene, const Ray& ray, int depth = 0) {
-    using namespace glm;
-
-    auto hit = scene.getHitInfo(ray);
-    
-    if (hit == nullptr) {
-        auto direction = normalize(ray.getDirection());
-        auto t = 0.5f * (direction.y + 1.f);
-        return (1.f - t) * vec3(1) + t * vec3(0.3f, 0.6f, 0.9f);
-    }
-
-    auto secondary = hit->getMaterial()->getScattered(ray, hit.get());
-    if (depth > 50 || secondary == nullptr) {
-        return vec3(0.f);
-    }
-
-    return secondary->getAttenuation() * getColorFromRay(scene, *secondary.get(), depth + 1);
-}
 
 int main(int argc, char **argv) {
     using namespace std;
@@ -39,28 +22,51 @@ int main(int argc, char **argv) {
 
     Image testImage(800, 600, 4);
     
-    const auto samples = 2048;
+    const auto totalSamples = 128;
     const auto threadCount = 8;
 
-    Scene scene;
+    default_random_engine gen;
+
+
+    shared_ptr<Material> matGround = make_shared<Lambert>(vec3(0.15f, 0.15f, 0.15f));
     
-    shared_ptr<Material> basicPink = make_shared<Lambert>(vec3(0.8f, 0.3f, 0.3f));
-    shared_ptr<Material> basicDirt = make_shared<Lambert>(vec3(0.8f, 0.8f, 0.0f));
-    shared_ptr<Material> metalGold = make_shared<Metal>(vec3(0.8f, 0.6f, 0.2f), 0.75f);
-    shared_ptr<Material> metalSilver = make_shared<Metal>(vec3(0.8f,0.8f,0.8f), 0.1f);
+    shared_ptr<Material> materials[5];
 
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, 0, 0), 0.5f, basicPink)));
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(1.3f, 0, 0), 0.5f, metalGold)));
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(-1.3f, 0, 0), 0.5f, metalSilver)));
-    scene.addObject(make_unique<Sphere>(Sphere(vec3(0, -200.5f, 0), 200, basicDirt)));
-
+    materials[0] = make_shared<Lambert>(vec3(0.8f, 0.3f, 0.3f));
+    materials[1] = make_shared<Lambert>(vec3(0.3f, 0.3f, 0.8f));
+    materials[2] = make_shared<Lambert>(vec3(0.3f, 0.8f, 0.3f));
+    
+    materials[3] = make_shared<Metal>(vec3(0.8f, 0.6f, 0.2f), 0.05f);
+    materials[4] = make_shared<Metal>(vec3(0.8f,0.8f,0.8f), 0.01f);
+    
     auto ratio = static_cast<float>(testImage.getWidth()) / static_cast<float>(testImage.getHeight());
 
-    vec3 camPos(2.f, 0.8f, 1.1f);
+    vec3 camPos(7.f, 5.f, -7.f);
     vec3 camTarget(0.f);
-    Camera camera(camPos, camTarget, 110.f, ratio, 0.2f, static_cast<float>((camTarget - camPos).length()));
+    Camera camera(camPos, camTarget, 110.f, ratio, 0.05f, static_cast<float>((camTarget - camPos).length()));
 
-    default_random_engine gen;
+    Raytracer tracer(camera);
+
+    uniform_real_distribution<float> sizeDist(0.6f, 2.5f);
+    uniform_real_distribution<float> posDist(-15.f, 15.f);
+    uniform_int_distribution<> matDist;
+
+    for (auto i = 0; i < 50; ++i) {
+        auto size = sizeDist(gen);
+        auto mat = matDist(gen) % 5;
+
+        auto x = posDist(gen);
+        auto z = posDist(gen);
+        tracer.getScene().addObject(make_unique<Sphere>(Sphere(vec3(x, size, z), size, materials[mat])));
+
+    }
+    //tracer.getScene().addObject(make_unique<Sphere>(Sphere(vec3(0, 0, 0), 0.5f, matRed)));
+    //tracer.getScene().addObject(make_unique<Sphere>(Sphere(vec3(1.3f, 0, 0), 0.5f, matGold)));
+    
+    
+    tracer.getScene().addObject(make_unique<Sphere>(Sphere(vec3(0, -1000.f, 0), 1000, matGround)));
+
+
     uniform_real_distribution<float> dist(0.f, 1.f);
 
     for (auto y = 0; y < testImage.getHeight(); ++y) {
@@ -71,11 +77,11 @@ int main(int argc, char **argv) {
             for (auto t = 0; t < threadCount; ++t) {
                 colorThreads.push_back(async(launch::async, [&] {
                     vec3 color(0);
-                    for (auto s = 0; s < samples / threadCount; ++s) {
+                    for (auto s = 0; s < totalSamples / threadCount; ++s) {
                         auto horizontalFactor = (static_cast<float>(x) + dist(gen)) / static_cast<float>(testImage.getWidth());
                         auto verticalFactor = (static_cast<float>(y) + dist(gen)) / static_cast<float>(testImage.getHeight());
                         auto ray = camera.getRay(horizontalFactor, verticalFactor);
-                        color += getColorFromRay(scene, ray);
+                        color += tracer.getColorFromRay(ray);
 
                     }
                     return color;
@@ -83,11 +89,11 @@ int main(int argc, char **argv) {
             }
 
             vec3 color(0);
-            for (auto colorPart = colorThreads.begin(); colorPart != colorThreads.end(); ++colorPart) {
-                color += (*colorPart).get();
+            for (auto& colorPart : colorThreads) {
+                color += colorPart.get();
             }
 
-            color /= static_cast<float>(samples);
+            color /= static_cast<float>(totalSamples);
             color = glm::sqrt(color);
             testImage.setPixel(x, y, Color32(color.r, color.g, color.b, 1.0f));
 
